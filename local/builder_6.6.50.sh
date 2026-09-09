@@ -13,8 +13,8 @@ read -p "请输入自定义内核后缀（默认：android15-8-g29d86c5fc9dd-abo
 CUSTOM_SUFFIX=${CUSTOM_SUFFIX:-android15-8-g29d86c5fc9dd-abogki428889875-4k}
 read -p "是否启用susfs？(y/n，默认：y): " APPLY_SUSFS
 APPLY_SUSFS=${APPLY_SUSFS:-y}
-read -p "是否启用 KPM？(y-启用 KpatchNext独立kpm实现, n-关闭kpm，默认：n): " USE_PATCH_LINUX
-USE_PATCH_LINUX=${USE_PATCH_LINUX:-n}
+read -p "是否启用 KPM？(y-启用 KpatchNext独立kpm实现, n-关闭kpm，默认：y): " USE_PATCH_LINUX
+USE_PATCH_LINUX=${USE_PATCH_LINUX:-y}
 read -p "KSU分支版本(r=ReSukiSU, y=SukiSU Ultra, n=KernelSU Next, k=KSU, l=lkm模式(无内置KSU), 默认：r): " KSU_BRANCH
 KSU_BRANCH=${KSU_BRANCH:-r}
 read -p "是否应用 lz4 1.10.0 & zstd 1.5.7 补丁？(y/n，默认：y): " APPLY_LZ4
@@ -31,8 +31,8 @@ read -p "是否启用ADIOS调度器？(y/n，默认：y): " APPLY_ADIOS
 APPLY_ADIOS=${APPLY_ADIOS:-y}
 read -p "是否启用Re-Kernel？(y/n，默认：n): " APPLY_REKERNEL
 APPLY_REKERNEL=${APPLY_REKERNEL:-n}
-read -p "是否启用内核级基带保护？(y/n，默认：y): " APPLY_BBG
-APPLY_BBG=${APPLY_BBG:-y}
+read -p "是否启用内核级基带保护？(y/n，默认：n): " APPLY_BBG
+APPLY_BBG=${APPLY_BBG:-n}
 
 if [[ "$KSU_BRANCH" == "y" || "$KSU_BRANCH" == "Y" ]]; then
   KSU_TYPE="SukiSU Ultra"
@@ -116,7 +116,9 @@ echo "CONFIG_LOCALVERSION_AUTO=n" >> ./common/arch/arm64/configs/gki_defconfig
 if [[ $KSU_BRANCH == [yYrR] ]]; then
   echo ">>> 拉取 ReSukiSU 并设置版本（由于SukiSU长期未维护无法正常编译，且ReSukiSU兼容sukisu管理器，故SukiSU源码仓库已重定向为resukisu）..."
   curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash -s main
-  echo 'CONFIG_KSU_FULL_NAME_FORMAT="%TAG_NAME%-%COMMIT_SHA%@cctv18"' >> ./common/arch/arm64/configs/gki_defconfig
+  # 注入 ksu_install_su_fd no-op (susfs 补丁引用旧接口, ReSukiSU 已重构到 ksu_handle_execveat_sucompat, 需 no-op 满足链接)
+  printf '\n/* susfs compat: ReSukiSU 重构了 su fd 安装逻辑到 ksu_handle_execveat_sucompat, 此 no-op 满足 susfs 补丁对旧接口 ksu_install_su_fd 的链接需求 */\nint ksu_install_su_fd(void)\n{\n    return 0;\n}\n' >> ./KernelSU/kernel/infra/file_wrapper.c
+  echo 'CONFIG_KSU_FULL_NAME_FORMAT="%TAG_NAME%-%COMMIT_SHA%@爱玩机的强哥"' >> ./common/arch/arm64/configs/gki_defconfig
 elif [[ "$KSU_BRANCH" == "n" || "$KSU_BRANCH" == "N" ]]; then
   echo ">>> 拉取 KernelSU Next 并设置版本..."
   curl -LSs "https://raw.githubusercontent.com/pershoot/KernelSU-Next/refs/heads/dev-susfs/kernel/setup.sh" | bash -s dev-susfs
@@ -206,6 +208,11 @@ DEFCONFIG_FILE=./common/arch/arm64/configs/gki_defconfig
 
 # 写入通用 SUSFS/KSU 配置
 echo "CONFIG_KSU=y" >> "$DEFCONFIG_FILE"
+# 应用 Unicode 不可见字码点绕过读取漏洞修复补丁
+cd common
+wget https://github.com/cctv18/oppo_oplus_realme_sm8750/raw/refs/heads/main/other_patch/unicode_bypass_fix.patch
+patch -p1 -F 3 < unicode_bypass_fix.patch || true
+cd ..
 if [[ "$APPLY_SUSFS" == [yY] ]]; then
   echo "CONFIG_KSU_SUSFS=y" >> "$DEFCONFIG_FILE"
   echo "CONFIG_KSU_SUSFS_HAS_MAGIC_MOUNT=y" >> "$DEFCONFIG_FILE"
