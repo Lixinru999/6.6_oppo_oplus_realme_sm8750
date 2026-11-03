@@ -116,8 +116,6 @@ echo "CONFIG_LOCALVERSION_AUTO=n" >> ./common/arch/arm64/configs/gki_defconfig
 if [[ $KSU_BRANCH == [yYrR] ]]; then
   echo ">>> 拉取 ReSukiSU 并设置版本（由于SukiSU长期未维护无法正常编译，且ReSukiSU兼容sukisu管理器，故SukiSU源码仓库已重定向为resukisu）..."
   curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash -s main
-  # 注入 ksu_install_su_fd no-op (susfs 补丁引用旧接口, ReSukiSU 已重构到 ksu_handle_execveat_sucompat, 需 no-op 满足链接)
-  printf '\n/* susfs compat: ReSukiSU 重构了 su fd 安装逻辑到 ksu_handle_execveat_sucompat, 此 no-op 满足 susfs 补丁对旧接口 ksu_install_su_fd 的链接需求 */\nint ksu_install_su_fd(void)\n{\n    return 0;\n}\n' >> ./KernelSU/kernel/infra/file_wrapper.c
   echo 'CONFIG_KSU_FULL_NAME_FORMAT="%TAG_NAME%-%COMMIT_SHA%@爱玩机的强哥"' >> ./common/arch/arm64/configs/gki_defconfig
 elif [[ "$KSU_BRANCH" == "n" || "$KSU_BRANCH" == "N" ]]; then
   echo ">>> 拉取 KernelSU Next 并设置版本..."
