@@ -384,7 +384,7 @@ sed -i 's/check_defconfig//' ./common/build.config.gki
 echo ">>> 开始编译内核..."
 cd common
 # 修复 libbpf.c 的 const 限定符错误 (clang-18 对 strchr 返回值的严格检查)
-sed -i 's/next_path = strchr(s,/next_path = (char *)strchr(s,/' tools/bpf/resolve_btfids/libbpf/libbpf.c
+find tools -name "libbpf.c" -exec sed -i 's/next_path = strchr(s,/next_path = (char *)strchr(s,/' {} \;
 make -j$(nproc --all) LLVM=-18 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnuabeihf- CC=clang LD=ld.lld HOSTCC=clang HOSTLD=ld.lld O=out KCFLAGS+=-O2 HOSTCFLAGS+=-Wno-error HOSTCXXFLAGS+=-Wno-error KCFLAGS+=-Wno-error gki_defconfig all
 echo ">>> 内核编译成功！"
 

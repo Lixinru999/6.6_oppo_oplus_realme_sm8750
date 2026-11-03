@@ -477,7 +477,7 @@ jobs:
             echo "正在启用 Droidspaces 容器支持..."
             cd kernel_workspace/common
           # 修复 libbpf.c 的 const 限定符错误 (clang-18 对 strchr 返回值的严格检查)
-          sed -i 's/next_path = strchr(s,/next_path = (char *)strchr(s,/' tools/bpf/resolve_btfids/libbpf/libbpf.c
+          find tools -name "libbpf.c" -exec sed -i 's/next_path = strchr(s,/next_path = (char *)strchr(s,/' {} \;
           echo "已修复 libbpf.c const 限定符问题"
             # 应用 Droidspaces 容器必须补丁
             wget https://github.com/$GITHUB_REPOSITORY/raw/refs/heads/$GITHUB_REF_NAME/droidspaces_patch/fix_sysvipc_kabi_6_7_8.patch
@@ -593,7 +593,7 @@ jobs:
           
           cd kernel_workspace/common
           # 修复 libbpf.c 的 const 限定符错误 (clang-18 对 strchr 返回值的严格检查)
-          sed -i 's/next_path = strchr(s,/next_path = (char *)strchr(s,/' tools/bpf/resolve_btfids/libbpf/libbpf.c
+          find tools -name "libbpf.c" -exec sed -i 's/next_path = strchr(s,/next_path = (char *)strchr(s,/' {} \;
           echo "已修复 libbpf.c const 限定符问题"
           wget https://github.com/$GITHUB_REPOSITORY/raw/refs/heads/$GITHUB_REF_NAME/lib/libfakestat.so
           wget https://github.com/$GITHUB_REPOSITORY/raw/refs/heads/$GITHUB_REF_NAME/lib/libfaketimeMT.so
