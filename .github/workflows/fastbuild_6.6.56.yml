@@ -474,15 +474,6 @@ jobs:
           if [[ "${{ github.event.inputs.droidspaces_enable }}" != "false" ]]; then
             echo "正在启用 Droidspaces 容器支持..."
             cd kernel_workspace/common
-          export KBUILD_BUILD_USER=kleaf
-          export KBUILD_BUILD_HOST=build-host
-          export KBUILD_BUILD_VERSION=1
-          export KBUILD_BUILD_TIMESTAMP="Thu Dec 19 17:58:46 UTC 2024"
-          # 强制重建版本/时间戳对象，避免 ccache 复用旧日期
-          rm -f out/init/version.o out/init/version-timestamp.o out/include/generated/utsversion.h out/include/generated/compile.h
-          # 修复 libbpf.c 的 const 限定符错误 (clang-18 对 strchr 返回值的严格检查)
-          find tools -name "libbpf.c" -exec sed -i 's/next_path = strchr(s,/next_path = (char *)strchr(s,/' {} \;
-          echo "已修复 libbpf.c const 限定符问题"
             # 应用 Droidspaces 容器必须补丁
             wget https://github.com/$GITHUB_REPOSITORY/raw/refs/heads/$GITHUB_REF_NAME/droidspaces_patch/fix_sysvipc_kabi_6_7_8.patch
             patch -p1 -F 3 < fix_sysvipc_kabi_6_7_8.patch || true
@@ -572,6 +563,11 @@ jobs:
           echo "CONFIG_LOCALVERSION_AUTO=n" >> ./common/arch/arm64/configs/gki_defconfig
            
       - name: 构建内核
+        env:
+          KBUILD_BUILD_USER: kleaf
+          KBUILD_BUILD_HOST: build-host
+          KBUILD_BUILD_VERSION: 1
+          KBUILD_BUILD_TIMESTAMP: "Thu Dec 19 17:58:46 UTC 2024"
         run: |
           WORKDIR="$(pwd)"
           export PATH="/usr/lib/ccache:$PATH"
@@ -596,6 +592,8 @@ jobs:
           echo "sloppiness = file_stat_matches,include_file_ctime,include_file_mtime,pch_defines,file_macro,time_macros" >> "$CCACHE_DIR/ccache.conf"
           
           cd kernel_workspace/common
+          # 强制重建版本/时间戳对象，避免 ccache 复用旧日期
+          rm -f out/init/version.o out/init/version-timestamp.o out/include/generated/utsversion.h out/include/generated/compile.h
           # 修复 libbpf.c 的 const 限定符错误 (clang-18 对 strchr 返回值的严格检查)
           find tools -name "libbpf.c" -exec sed -i 's/next_path = strchr(s,/next_path = (char *)strchr(s,/' {} \;
           echo "已修复 libbpf.c const 限定符问题"
