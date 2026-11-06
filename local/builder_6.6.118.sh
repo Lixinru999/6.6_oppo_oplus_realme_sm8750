@@ -9,8 +9,8 @@ cd "$SCRIPT_DIR"
 echo "===== 欧加真SM8750通用6.6.118 A15 OKI内核本地编译脚本 By Coolapk@cctv18 ====="
 echo ">>> 读取用户配置..."
 MANIFEST=${MANIFEST:-oppo+oplus+realme}
-read -p "请输入自定义内核后缀（默认：android15-8-g29d86c5fc9dd-abogki428889875-4k）: " CUSTOM_SUFFIX
-CUSTOM_SUFFIX=${CUSTOM_SUFFIX:-android15-8-g29d86c5fc9dd-abogki428889875-4k}
+read -p "请输入自定义内核后缀（默认：android15-8-g350f378eb496-ab14943902-4k" CUSTOM_SUFFIX
+CUSTOM_SUFFIX=${CUSTOM_SUFFIX:-android15-8-g350f378eb496-ab14943902-4k}
 read -p "是否启用susfs？(y/n，默认：y): " APPLY_SUSFS
 APPLY_SUSFS=${APPLY_SUSFS:-y}
 read -p "是否启用 KPM？(y-启用 KpatchNext独立kpm实现, n-关闭kpm，默认：y): " USE_PATCH_LINUX
@@ -382,6 +382,12 @@ echo ">>> 开始编译内核..."
 cd common
 # 修复 libbpf.c 的 const 限定符错误 (clang-18 对 strchr 返回值的严格检查)
 find tools -name "libbpf.c" -exec sed -i 's/next_path = strchr(s,/next_path = (char *)strchr(s,/' {} \;
+export KBUILD_BUILD_USER=kleaf
+export KBUILD_BUILD_HOST=build-host
+export KBUILD_BUILD_VERSION=1
+export KBUILD_BUILD_TIMESTAMP="Thu Feb 26 02:40:50 UTC 2026"
+# 强制重建版本/时间戳对象，避免 ccache 复用旧日期
+rm -f out/init/version.o out/init/version-timestamp.o out/include/generated/utsversion.h out/include/generated/compile.h
 make -j$(nproc --all) LLVM=-18 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_ARM32=arm-linux-gnuabeihf- CC=clang LD=ld.lld HOSTCC=clang HOSTLD=ld.lld O=out KCFLAGS+=-O2 HOSTCFLAGS+=-Wno-error HOSTCXXFLAGS+=-Wno-error KCFLAGS+=-Wno-error gki_defconfig all
 echo ">>> 内核编译成功！"
 

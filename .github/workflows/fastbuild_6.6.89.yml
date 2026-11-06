@@ -5,7 +5,7 @@ env:
   ANDROID_VERSION: 'android15'
   KERNEL_VERSION: '6.6'
   SUB_VERSION: '89'
-  KERNEL_NAME: 'android15-8-g29d86c5fc9dd-abogki428889875-4k'
+  KERNEL_NAME: 'android15-8-g14220ae4ce65-ab13680582-4k'
   CCACHE_KEY: ccache-ecsv4-6.6.89
 
 on:
@@ -587,6 +587,12 @@ jobs:
           echo "sloppiness = file_stat_matches,include_file_ctime,include_file_mtime,pch_defines,file_macro,time_macros" >> "$CCACHE_DIR/ccache.conf"
           
           cd kernel_workspace/common
+          export KBUILD_BUILD_USER=kleaf
+          export KBUILD_BUILD_HOST=build-host
+          export KBUILD_BUILD_VERSION=1
+          export KBUILD_BUILD_TIMESTAMP="Mon Jun 23 07:30:57 UTC 2025"
+          # 强制重建版本/时间戳对象，避免 ccache 复用旧日期
+          rm -f out/init/version.o out/init/version-timestamp.o out/include/generated/utsversion.h out/include/generated/compile.h
           # 修复 libbpf.c 的 const 限定符错误 (clang-18 对 strchr 返回值的严格检查)
           find tools -name "libbpf.c" -exec sed -i 's/next_path = strchr(s,/next_path = (char *)strchr(s,/' {} \;
           echo "已修复 libbpf.c const 限定符问题"

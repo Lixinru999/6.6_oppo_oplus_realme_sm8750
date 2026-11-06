@@ -1,0 +1,26 @@
+adb shell cat /proc/version
+Linux version 6.6.118-android15-8-g350f378eb496-ab14943902-4k (kleaf@build-host) (Android (11368308, +pgo, +bolt, +lto, +mlgo, based on r510928) clang version 18.0.0 (https://android.googlesource.com/toolchain/llvm-project 477610d4d0d988e69dbc3fae4fe86bff3f07f2b5), LLD 18.0.0) #1 SMP PREEMPT Thu Feb 26 02:40:50 UTC 2026
+
+
+6.6.118-android15-8-g350f378eb496-ab14943902-4k
+
+
+#1 SMP PREEMPT Thu Feb 26 02:40:50 UTC 2026
+
+自定义构造：
+
+-android15-8-g350f378eb496-ab14943902-4k
+
+
+Thu Feb 26 02:40:50 UTC 2026
+
+
+2026年5月5日
+
+
+6.6.118-android15-8-g350f378eb496-ab14943902-4k
+#1 Thu Feb 26 02:40:50 UTC 2026
+
+
+
+TB322FC_CN_OPEN_USER_Q00041.1_W_ZUXOS_1.5.10.251_ST_260604
